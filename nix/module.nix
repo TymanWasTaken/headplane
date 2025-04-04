@@ -77,10 +77,9 @@ in {
         environment = agentEnv;
 
         serviceConfig = {
-          User = config.services.headscale.user;
-          Group = config.services.headscale.group;
+          DynamicUser = true;
 
-          ExecStart = "${pkgs.headplane-agent}/bin/hp_agent";
+          ExecStart = lib.getExe cfg.agent.package;
           Restart = "always";
           RestartSec = 5;
 
@@ -97,10 +96,11 @@ in {
       requires = ["headscale.service"];
 
       serviceConfig = {
-        User = config.services.headscale.user;
-        Group = config.services.headscale.group;
+        DynamicUser = true;
 
-        ExecStart = "${pkgs.headplane}/bin/headplane";
+        StateDirectory = "headplane";
+
+        ExecStart = lib.getExe cfg.package;
         Restart = "always";
         RestartSec = 5;
 

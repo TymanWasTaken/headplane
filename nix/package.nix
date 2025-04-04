@@ -42,4 +42,13 @@ stdenv.mkDerivation (finalAttrs: {
         --add-flags $out/share/headplane/build/server/index.js
     runHook postInstall
   '';
+
+  meta = {
+    description = "A feature-complete Web UI for Headscale";
+    homepage = "https://github.com/tale/headplane";
+    changelog = "https://github.com/tale/headplane/blob/main/CHANGELOG.md";
+    licence = lib.licenses.mit;
+
+    mainProgram = "headplane";
+  };
 })
