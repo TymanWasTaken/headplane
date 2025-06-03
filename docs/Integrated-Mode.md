@@ -26,7 +26,7 @@ experience.
 
 Requirements:
 - Docker and Docker Compose
-- Headscale 0.25 or newer
+- Headscale 0.26 or newer
 - A finished configuration file (config.yaml)
 
 Here is what a sample Docker Compose deployment would look like:
@@ -34,7 +34,7 @@ Here is what a sample Docker Compose deployment would look like:
 services:
   headplane:
     # I recommend you pin the version to a specific release
-    image: ghcr.io/tale/headplane0.5.10:
+    image: ghcr.io/tale/headplane:0.6.0
     container_name: headplane
     restart: unless-stopped
     ports:
@@ -44,16 +44,23 @@ services:
       # This should match headscale.config_path in your config.yaml
       - './headscale-config/config.yaml:/etc/headscale/config.yaml'
 
+      # If using dns.extra_records in Headscale (recommended), this should
+      # match the headscale.dns_records_path in your config.yaml
+      - './headscale-config/dns_records.json:/etc/headscale/dns_records.json'
+
       # Headplane stores its data in this directory
       - './headplane-data:/var/lib/headplane'
 
       # If you are using the Docker integration, mount the Docker socket
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
   headscale:
-    image: headscale/headscale:0.25.1
+    image: headscale/headscale:0.26.0
     container_name: headscale
     restart: unless-stopped
     command: serve
+    labels:
+      # This is needed for Headplane to find it and signal it
+      me.tale.headplane.target: headscale
     ports:
       - '8080:8080'
     volumes:
@@ -70,11 +77,14 @@ you build the container yourself or run Headplane in Bare-Metal mode.
 > setting up your `config.yaml` file to the appropriate values.
 
 ## Docker Integration
-The Docker integration is the easiest to setup, as it only requires the Docker socket
-to be mounted into the container along with some configuration. As long as Headplane
-has access to the Docker socket and the name of the Headscale container, it will
-automatically propagate config and DNS changes to Headscale without any additional
-configuration.
+The Docker integration is the easiest to set up, as it only requires mounting the
+Docker socket into the container along with some basic configuration. Headplane
+uses Docker labels to discover the Headscale container. As long as Headplane has
+access to the Docker socket and can identify the Headscale container—either by
+label or name—it will automatically propagate configuration and DNS changes to
+Headscale without any additional setup. Alternatively, instead of using a label
+to dynamically determine the container name, it is possible to directly specify
+the container name.
 
 ## Native Linux (/proc) Integration
 The `proc` integration is used when you are running Headscale and Headplane on
@@ -151,7 +161,7 @@ spec:
       serviceAccountName: default
       containers:
       - name: headplane
-        image: ghcr.io/tale/headplane0.5.10:
+        image: ghcr.io/tale/headplane:0.6.0
         env:
         # Set these if the pod name for Headscale is not static
         # We will use the downward API to get the pod name instead
@@ -168,7 +178,7 @@ spec:
           mountPath: /var/lib/headplane
 
       - name: headscale
-        image: headscale/headscale:0.25.1
+        image: headscale/headscale:0.26.0
         command: ['serve']
         volumeMounts:
         - name: headscale-data

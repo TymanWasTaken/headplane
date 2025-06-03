@@ -11,7 +11,7 @@ different needs.
 ## Deployment
 
 Requirements:
-- Headscale 0.25 or newer (already deployed)
+- Headscale 0.26 or newer (already deployed)
 - Node.js 22 LTS or newer
 - [PNPM](https://pnpm.io/installation) 10.x
 - A finished configuration file (config.yaml)
@@ -30,7 +30,7 @@ Clone the Headplane repository, install dependencies, and build the project:
 ```sh
 git clone https://github.com/tale/headplane
 cd headplane
-git checkout v0.5.5 # Or whatever tag you want to use
+git checkout v0.6.0 # Or whatever tag you want to use
 pnpm install
 pnpm build
 ```
@@ -68,14 +68,15 @@ Headplane service:
 ```ini
 [Unit]
 Description=Headplane
-After=network.target
+# Decomment the following line if running on bare metal with integrated mode (/proc integration)
+# PartOf=headscale.service
 
 [Service]
 Type=simple
 User=headplane
 Group=headplane
 WorkingDirectory=/path/to/headplane
-ExecStart=/usr/bin/node /path/to/headplane/build/headplane/server.js
+ExecStart=/usr/bin/node /path/to/headplane/build/server/index.js
 Restart=always
 
 [Install]
